@@ -1,30 +1,30 @@
-import  AsyncStorage  from "@react-native-community/async-storage";
-// import { Notifications } from "expo";
+import AsyncStorage from '@react-native-community/async-storage';
+import Notifications from 'react-native-push-notification';
 // import * as Permissions from "expo-permissions";
 
-const appKey = "FLASH_CARD_DECKS";
-const notificationKey = "FLASH_CARD_NOTIFICATION";
+const appKey = 'MY_CAR_BOOK:appKey';
+const notificationKey = 'MY_CAR_BOOK:notificationKey';
 const decks = {
   React: {
-    title: "React",
+    title: 'React',
     questions: [
       {
-        question: "What is React?",
-        answer: "A library for managing user interfaces",
+        question: 'What is React?',
+        answer: 'A library for managing user interfaces',
       },
       {
-        question: "Where do you make Ajax requests in React?",
-        answer: "The componentDidMount lifecycle event",
+        question: 'Where do you make Ajax requests in React?',
+        answer: 'The componentDidMount lifecycle event',
       },
     ],
   },
   JavaScript: {
-    title: "JavaScript",
+    title: 'JavaScript',
     questions: [
       {
-        question: "What is a closure?",
+        question: 'What is a closure?',
         answer:
-          "The combination of a function and the lexical environment within which that function was declared.",
+          'The combination of a function and the lexical environment within which that function was declared.',
       },
     ],
   },
@@ -44,11 +44,11 @@ export const getDecks = async () => {
   }
 };
 
-export const saveDeckToStorage = async (decks) => {
+export const saveDeckToStorage = async decks => {
   await AsyncStorage.setItem(appKey, JSON.stringify(decks));
 };
 
-export const getDeck = async (title) => {
+export const getDeck = async title => {
   try {
     const value = await AsyncStorage.getItem(appKey);
     if (value !== null) {
@@ -63,11 +63,11 @@ export const getDeck = async (title) => {
 
 export const addQuestion = async (title, question) => {
   try {
-    console.log("runs");
+    console.log('runs');
     const value = await AsyncStorage.getItem(appKey);
     if (value !== null) {
       const decks = JSON.parse(value);
-      decks[title]["questions"].push(question);
+      decks[title]['questions'].push(question);
       await AsyncStorage.setItem(appKey, JSON.stringify(decks));
     }
   } catch (e) {
@@ -75,12 +75,12 @@ export const addQuestion = async (title, question) => {
   }
 };
 
-export const createDeck = async (title) => {
+export const createDeck = async title => {
   try {
     const value = await AsyncStorage.getItem(appKey);
     if (value !== null) {
       const decks = JSON.parse(value);
-      decks[title] = { title, questions: [] };
+      decks[title] = {title, questions: []};
       await AsyncStorage.setItem(appKey, JSON.stringify(decks));
     }
   } catch (e) {
@@ -88,7 +88,7 @@ export const createDeck = async (title) => {
   }
 };
 
-export const deleteDeck = async (title) => {
+export const deleteDeck = async title => {
   try {
     const value = await AsyncStorage.getItem(appKey);
 
@@ -104,51 +104,54 @@ export const deleteDeck = async (title) => {
   }
 };
 
-// const createNotificationObject = () => {
-//   return {
-//     title: "Take a Quiz.",
-//     body: `Don't forget to take a quiz`,
-//     ios: {
-//       sound: true,
-//     },
-//     android: {
-//       sound: true,
-//       priority: "high",
-//       sticky: false,
-//       vibrate: true,
-//     },
-//   };
-// };
+Notifications.configure({
+  // *** (required) Called when a remote or local notification is opened or received
+  onNotification: function(notification) {
+    console.log('NOTIFICATION:', notification);
 
-// export const clearLocalNotification = async () => {
-//   await AsyncStorage.removeItem(notificationKey);
-//   await Notifications.cancelAllScheduledNotificationsAsync();
-// };
+    // process the notification here
+  },
 
-// export const setLocalNotification = async () => {
-//   const response = await AsyncStorage.getItem(notificationKey);
-//   const data = JSON.parse(response);
-//   if (data === null) {
-//     const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+  // *** ANDROID ONLY: FCM Sender ID (product_number) (optional - not required for local notifications, but is need to receive remote push notifications)
+  // senderID: 'YOUR FCM SENDER ID',
 
-//     if (status === "granted") {
-//       Notifications.cancelAllScheduledNotificationsAsync();
-//       let tomorrow = new Date();
+  // *** Should the initial notification be popped automatically
+  // *** default: true
+  popInitialNotification: true,
 
-//       // tomorrow.setHours(20);
-//       tomorrow = tomorrow.setDate(tomorrow.getDate() + 1);
-//       Notifications.scheduleLocalNotificationAsync(createNotificationObject(), {
-//         time: tomorrow,
-//         repeat: "day",
-//       });
-//       AsyncStorage.setItem(notificationKey, JSON.stringify(true));
-//     }
-//   }
-// };
+  /**
+   * (optional) default: true
+   * - Specified if permissions (ios) and token (android and ios) will requested or not,
+   * - if not, you must call PushNotificationsHandler.requestPermissions() later
+   */
+  // requestPermissions: true,
+});
+
+export const clearLocalNotification = async () => {
+  await AsyncStorage.removeItem(notificationKey);
+  await Notifications.cancelAllLocalNotifications();
+};
+
+export const setLocalNotification = async () => {
+  const response = await AsyncStorage.getItem(notificationKey);
+  const data = JSON.parse(response);
+  if (data === null) {
+    Notifications.cancelAllLocalNotifications();
+    let tomorrow = new Date();
+
+    tomorrow.setHours(20);
+    tomorrow = tomorrow.setDate(tomorrow.getDate() + 1);
+    Notifications.localNotificationSchedule({
+      message: 'MyCarBook Notification',
+      date: new Date(Date.now() + 60 * 1000),
+    });
+    AsyncStorage.setItem(notificationKey, JSON.stringify(true));
+  }
+};
 
 // export const listenForNotifications = () => {
-//   Notifications.addListener((notification) => {
-//     if (notification.origin === "received") {
+//   Notifications.addListener(notification => {
+//     if (notification.origin === 'received') {
 //       Alert.alert(notification.title, notification.body);
 //     }
 //   });

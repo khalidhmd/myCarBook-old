@@ -1,19 +1,19 @@
-import "react-native-gesture-handler";
-import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
-import HomeTab from "./Components/HomeTab";
-import AddCard from "./Components/AddCard";
-import Deck from "./Components/Deck";
-import Quiz from "./Components/Quiz";
+import 'react-native-gesture-handler';
+import React from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import HomeTab from './Components/HomeTab';
+import AddCard from './Components/AddCard';
+import Deck from './Components/Deck';
+import Quiz from './Components/Quiz';
 import {
   setLocalNotification,
-  listenForNotifications,
+  // listenForNotifications,
   saveDeckToStorage,
-} from "./api/helpers";
-import { createStore } from "redux";
-import { Provider } from "react-redux";
-import reducer from "./reducers";
+} from './api/helpers';
+import {createStore} from 'redux';
+import {Provider} from 'react-redux';
+import reducer from './reducers';
 
 const Stack = createStackNavigator();
 const store = createStore(reducer);
@@ -22,7 +22,9 @@ store.subscribe(() => {
 });
 export default class App extends React.Component {
   componentDidMount() {
-    // setLocalNotification();
+    setLocalNotification()
+      .then(() => console.log('Set Notification success'))
+      .catch(e => console.log(e));
     // listenForNotifications();
   }
 
